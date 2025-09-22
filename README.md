@@ -1,6 +1,6 @@
 # DCM4CHEE PACS with OHIF Viewer - FOR DEMO - NO AUTHENTICATION
 
-A complete, production-ready DICOM PACS (Picture Archiving and Communication System) using DCM4CHEE Archive with OHIF (Open Health Imaging Foundation) web viewer, deployed using Docker Compose.
+A complete,  DEMO for DICOM PACS (Picture Archiving and Communication System) using DCM4CHEE Archive with OHIF (Open Health Imaging Foundation) web viewer, deployed using Docker Compose.
 
 ## 🏥 System Overview
 
