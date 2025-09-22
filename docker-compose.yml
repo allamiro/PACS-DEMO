@@ -1,0 +1,149 @@
+version: "3.8"
+
+services:
+  ldap:
+    image: dcm4che/slapd-dcm4chee:2.6.8-34.0
+    container_name: dcm4chee-ldap
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ports:
+      - "389:389"
+    environment:
+      - LDAP_BASE_DN=${LDAP_BASE_DN:-dc=dcm4che,dc=org}
+      - LDAP_ROOTPASS=${LDAP_ROOTPASS:-secret}
+      - ARCHIVE_DEVICE_NAME=${ARCHIVE_DEVICE_NAME:-dcm4chee-arc}
+      - AE_TITLE=${AE_TITLE:-DCM4CHEE}
+      - DICOM_PORT=${DICOM_PORT:-11112}
+      - HL7_PORT=${HL7_PORT:-2575}
+      - STORAGE_DIR=${STORAGE_DIR:-/storage/fs1}
+    volumes:
+      - ${DATA_DIR:-./data}/ldap:/var/lib/openldap/openldap-data
+      - ${DATA_DIR:-./data}/slapd.d:/etc/openldap/slapd.d
+    networks:
+      - dcm4chee-network
+    healthcheck:
+      test: ["CMD", "ldapsearch", "-x", "-H", "ldap://localhost:389", "-b", "${LDAP_BASE_DN:-dc=dcm4che,dc=org}", "-s", "base"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  db:
+    image: dcm4che/postgres-dcm4chee:17.4-34
+    container_name: dcm4chee-db
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-pacsdb}
+      - POSTGRES_USER=${POSTGRES_USER:-pacs}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-pacs}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${DATA_DIR:-./data}/db:/var/lib/postgresql/data
+    networks:
+      - dcm4chee-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pacs} -d ${POSTGRES_DB:-pacsdb}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  arc:
+    image: dcm4che/dcm4chee-arc-psql:5.34.0
+    container_name: dcm4chee-arc
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ports:
+      - "8080:8080"   # HTTP Web Interface
+      - "8443:8443"   # HTTPS Web Interface
+      - "9990:9990"   # WildFly Admin Console HTTP
+      - "9993:9993"   # WildFly Admin Console HTTPS
+      - "11112:11112" # DICOM Port
+      - "2762:2762"   # DICOM TLS Port
+      - "2575:2575"   # HL7 Port
+      - "12575:12575" # HL7 TLS Port
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-pacsdb}
+      - POSTGRES_USER=${POSTGRES_USER:-pacs}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-pacs}
+      - LDAP_BASE_DN=${LDAP_BASE_DN:-dc=dcm4che,dc=org}
+      - LDAP_ROOTPASS=${LDAP_ROOTPASS:-secret}
+      - ARCHIVE_DEVICE_NAME=${ARCHIVE_DEVICE_NAME:-dcm4chee-arc}
+      - WILDFLY_CHOWN=${WILDFLY_CHOWN:-/opt/wildfly/standalone /storage}
+      - WILDFLY_WAIT_FOR=ldap:389 db:5432
+      - JAVA_OPTS=${JAVA_OPTS:--Xms512m -Xmx2g}
+    depends_on:
+      ldap:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${DATA_DIR:-./data}/wildfly:/opt/wildfly/standalone
+      - ${DATA_DIR:-./data}/storage:/storage
+    networks:
+      - dcm4chee-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/dcm4chee-arc/ui2/"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 120s
+    # Uncomment if you encounter memory issues
+    # security_opt:
+    #   - seccomp:unconfined
+
+  ohif-viewer:
+    image: ohif/app:v3.8.0
+    container_name: dcm4chee-ohif
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ports:
+      - "3000:80"
+    volumes:
+      - ./config/ohif-config.js:/usr/share/nginx/html/app-config.js:ro
+    networks:
+      - dcm4chee-network
+    depends_on:
+      - arc
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  dcm4chee-network:
+    driver: bridge
+    name: dcm4chee-network
+
+volumes:
+  ldap-data:
+    driver: local
+  slapd-config:
+    driver: local
+  postgres-data:
+    driver: local
+  wildfly-data:
+    driver: local
+  storage-data:
+    driver: local
