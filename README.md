@@ -11,6 +11,7 @@ This deployment provides a full-featured medical imaging PACS system with:
 - **PostgreSQL 17.4** - Robust database backend
 - **OpenLDAP** - Authentication and authorization
 - **WildFly Application Server** - Java EE runtime
+![alt text](image.png)
 
 ## 📁 Project Structure
 
