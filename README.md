@@ -46,10 +46,8 @@ CUSTOM-PACS/
 
 ```bash
 # If you have the project files
-cd CUSTOM-PACS
-
-# Or create new directory and copy files
-mkdir CUSTOM-PACS && cd CUSTOM-PACS
+git clone https://github.com/allamiro/PACS-DEMO.git
+cd PACS-DEMO
 ```
 
 ### 2. Run Setup Script
