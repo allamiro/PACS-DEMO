@@ -125,6 +125,8 @@ Once deployed, access these web interfaces:
 
 Edit `.env` file to customize:
 
+**⚠️ Security Note**: The `.env` file is created locally by the setup script and contains sensitive information. It should never be committed to version control.
+
 ```bash
 # Data storage location
 DATA_DIR=./data
