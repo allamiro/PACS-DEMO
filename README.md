@@ -89,6 +89,21 @@ docker compose ps
 # All services should show "healthy" status
 ```
 
+### 5. Setup WildFly Admin User
+
+The WildFly management console requires an admin user to be created. Run this command to set up access:
+
+```bash
+# Create admin user for WildFly management console
+docker compose exec arc /opt/wildfly/bin/add-user.sh -u admin -p admin -e -s
+
+# Restart the arc service to apply changes
+docker compose restart arc
+
+# Wait for service to be healthy again
+docker compose ps arc
+```
+
 ## 🌐 Access Points
 
 Once deployed, access these web interfaces:
