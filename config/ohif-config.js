@@ -10,9 +10,9 @@ window.config = {
         configuration: {
           friendlyName: 'DCM4CHEE DICOM Web',
           name: 'DCM4CHEE',
-          wadoUriRoot: 'http://10.0.0.10:8080/dcm4chee-arc/aets/DCM4CHEE/wado',
-          qidoRoot: 'http://10.0.0.10:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
-          wadoRoot: 'http://10.0.0.10:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
+          wadoUriRoot: 'http://localhost:8080/dcm4chee-arc/aets/DCM4CHEE/wado',
+          qidoRoot: 'http://localhost:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
+          wadoRoot: 'http://localhost:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
           qidoSupportsIncludeField: true,
           imageRendering: 'wadors',
           thumbnailRendering: 'wadors',
