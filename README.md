@@ -209,6 +209,72 @@ Configure your DICOM client with:
 - **Host**: localhost (or server IP)
 - **Port**: 11112
 
+## Configure for different devices (CT, X-ray, …)” — practical options
+
+You don’t need separate AEs per modality to make this work—the archive reads modality from the DICOM tag (0008,0060) Modality in each file. That said, you might want per-modality AEs, ports, or routing. Here are three common patterns, from simplest to more advanced:
+
+### Pattern 1 — Single AE for everything (recommended to start)
+
+Keep AE Title = DCM4CHEE, Port = 11112 (already exposed).
+
+On each modality (CT, CR, MR), set Remote AE to DCM4CHEE, host 167.172.186.105, port 11112.
+
+Done. Studies will still show as CT/CR/MR because the files’ (0008,0060) are preserved.
+
+### Pattern 2 — Multiple archive AEs (logical separation by AE Title)
+
+Useful if you want CT to send to AE=CT_IN, X-ray to AE=CR_IN, etc.
+
+Steps (in dcm4chee UI):
+
+Open Configuration → Devices → dcm4chee-arc → Edit.
+
+Under Application Entities, Add a new AE:
+
+AE Title: e.g., CT_IN
+
+#### Association Acceptor: ✓
+
+Network Connection: select the existing dcm4chee-arc listener.
+
+You can keep the same port 11112 (dcm4chee can accept multiple AETs on one listener).
+
+Repeat for CR_IN, MR_IN as desired.
+
+On the CT console, set Remote AE to CT_IN (host/port unchanged); on X-ray, set CR_IN, etc.
+
+Optional: add WebApps → DCM4CHEE_ARC_AET entries if you want DICOMweb endpoints tied to those AETs as well (e.g., …/aets/CT_IN/rs), but it’s not required for plain DIMSE C-STORE.
+
+### Pattern 3 — Storage/Routing rules per modality (advanced ops)
+
+If you want CT images to land in a different storage bucket or trigger different retention:
+
+UI → Configuration → dcm4chee-arc → Archiving:
+
+Define additional Storage Descriptors (e.g., fs_ct, fs_cr) pointing at different file system paths (or S3/MinIO if you use object storage).
+
+UI → Configuration → dcm4chee-arc → HL7 & DICOM Rules:
+
+Create a Storage ID Rule or Archive Rule with a condition on Modality = CT (or Calling AE Title = CT_IN) → set storageID=fs_ct.
+
+Likewise for CR → fs_cr.
+
+(Optional) Define Export Rules if you want automatic forwarding, e.g., route CR to an external QA node.
+
+6) Typical modality console settings
+
+On the CT / X-ray device (sender) you will set:
+
+Called AE Title: DCM4CHEE (or CT_IN, CR_IN if you created separate AEs)
+
+Host/IP: 167.172.186.105
+
+Port: 11112
+
+Transfer Syntax: usually “Implicit VR Little Endian” and/or “Explicit VR Little Endian” are fine.
+
+Association Test: run a “Verify” from the modality; it should succeed.
+
 ## 🔍 Monitoring & Troubleshooting
 
 ### Check Service Health
