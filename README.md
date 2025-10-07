@@ -267,7 +267,7 @@ On the CT / X-ray device (sender) you will set:
 
 Called AE Title: DCM4CHEE (or CT_IN, CR_IN if you created separate AEs)
 
-Host/IP: 167.172.186.105
+Host/IP: IP ADDRESS x.x.x.x
 
 Port: 11112
 
