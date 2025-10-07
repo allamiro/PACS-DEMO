@@ -187,6 +187,21 @@ docker run --rm --network=dcm4chee-network \
   storescu -cDCM4CHEE@arc:11112 "/data/"
 ```
 
+### Using storescu command
+
+```
+storescu -aec DCM4CHEE IP_ADDRESS 11112 -v -xi 56364823.dcm
+I: checking input files ...
+I: Requesting Association
+I: Association Accepted (Max Send PDV: 16366)
+I: Sending file: 56364823.dcm
+I: Converting transfer syntax: Little Endian Explicit -> Little Endian Implicit
+I: Sending Store Request (MsgID 1, CT)
+XMIT: .................................
+I: Received Store Response (Success)
+I: Releasing Association
+```
+
 ### Using DICOM Clients
 
 Configure your DICOM client with:
