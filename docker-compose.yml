@@ -86,6 +86,11 @@ services:
       - WILDFLY_CHOWN=${WILDFLY_CHOWN:-/opt/wildfly/standalone /storage}
       - WILDFLY_WAIT_FOR=ldap:389 db:5432
       - JAVA_OPTS=${JAVA_OPTS:--Xms512m -Xmx2g}
+      - SYSLOG_DEVICE_NAME=${SYSLOG_DEVICE_NAME:-logstash}
+      - SYSLOG_HOST=${SYSLOG_HOST:-127.0.0.1}
+      - SYSLOG_PORT=${SYSLOG_PORT:-514}
+      - SYSLOG_PROTOCOL=${SYSLOG_PROTOCOL:-UDP}
+      - SYSLOG_TLS_PORT=${SYSLOG_TLS_PORT:-6514}
     depends_on:
       ldap:
         condition: service_healthy

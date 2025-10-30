@@ -158,6 +158,29 @@ DICOM_PORT=11112
 JAVA_OPTS=-Xms512m -Xmx2g
 ```
 
+### Audit Logging (Syslog)
+
+The archive can emit audit messages (IHE ATNA) to an external syslog collector
+such as Logstash or rsyslog. Configure the following environment variables in
+`.env` (or copy from `docker-compose.env`) before starting the stack:
+
+```bash
+# Syslog target that should receive audit events
+SYSLOG_DEVICE_NAME=logstash          # Friendly name shown inside LDAP config
+SYSLOG_HOST=10.10.10.50              # Hostname or IP of your syslog listener
+SYSLOG_PORT=514                      # UDP/TCP port used for plain syslog
+SYSLOG_PROTOCOL=UDP                  # UDP or TCP
+SYSLOG_TLS_PORT=6514                 # Optional TLS port (if you enable TLS)
+```
+
+After changing these values run `docker compose up -d arc` to recreate the
+archive container with the new configuration. You can confirm that audit events
+are being emitted by monitoring your syslog collector or by running:
+
+```bash
+docker compose logs -f arc | grep -i audit
+```
+
 ### OHIF Viewer Configuration
 
 The OHIF viewer is configured via `config/ohif-config.js`. Key settings:
@@ -208,6 +231,18 @@ Configure your DICOM client with:
 - **AE Title**: DCM4CHEE
 - **Host**: localhost (or server IP)
 - **Port**: 11112
+
+If the CT/X-ray console cannot open an association, verify the listener with
+the `echoscu` utility (part of the dcm4che tools):
+
+```bash
+docker run --rm --network=dcm4chee-network \
+  dcm4che/dcm4che-tools \
+  echoscu -cDCM4CHEE@arc:11112
+```
+
+Successful output confirms that the AE title, host and port combination is
+reachable from the modality network.
 
 ## Configure for different devices (CT, X-ray, …)” — practical options
 
